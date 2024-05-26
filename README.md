@@ -1,5 +1,9 @@
 
 # LynxVR - v2
+
+> [!WARNING]  
+> The current release does not include backend code to access heartrate service!
+
 LynxVR is a handy app that bridges the gap between your Wear OS smartwatch and your VR adventures. It lets you send your real-time heart rate (HR) data directly into VR games like Resonite and VR Chat, adding a new layer of immersion and personalization.
 
 - Real-time Heart Rate Tracking: See your heart rate reflected in-game, adding a layer of realism that reflects your exertion during gameplay.
@@ -21,6 +25,9 @@ Releasing Soon - July 2024
 
 # API Specificationm 
 Work In Progress
+
+# Credit 
+Gawdl3y - Some inspiration for this app is based on [Heartsock](https://github.com/Gawdl3y/heartsock-app) 
 
 # Contributions
 Want to contribute? Share your ideas and create a PR! We're always looking for some help!
