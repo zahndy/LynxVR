@@ -58,7 +58,7 @@ Resonite uses Websockets and OSC to connect to the watch via a companion app (Ly
 
 This feature is not implemented on public builds of LynxVR this is used privately by Lynix.
 
-Use websocket on ``wss://api.lynix.ca/lynxvr`` and provide an initial login message with ``AUTH {API Key}`` to authenticate to the websocket.
+Use websocket on ``wss://api.lynix.ca/lynxvr`` and provide an initial login message with ``AUTH {API Key}`` to authenticate to the websocket. On your watch you must set the target server to ``api.lynix.ca``
 
 
 # Credit 
