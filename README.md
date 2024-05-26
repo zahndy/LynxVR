@@ -29,7 +29,7 @@ Releasing Soon - July 2024
 
 [See more devices](https://github.com/lynixfur/LynxVR/wiki/Device-Compatibility-List)
 
-# API Specificationm
+# API Specification
 
 ### VRChat 
 VRChat utilizes OSC to receive data directly from the watch.
