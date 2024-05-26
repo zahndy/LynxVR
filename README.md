@@ -27,6 +27,8 @@ Releasing Soon - July 2024
 | Pixel Watch            | WearOS 4         | ✅               | ✅             | |
 | Samsung Galaxy Watch   | WearOS 4         | ✅               | ✅             | Sends in brusts instead of constant HR. |
 
+[See more devices](https://github.com/lynixfur/LynxVR/wiki/Device-Compatibility-List)
+
 # API Specificationm 
 Work In Progress
 
