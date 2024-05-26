@@ -1,1 +1,0 @@
-# LynxVR Desktop App
