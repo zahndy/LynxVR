@@ -17,6 +17,10 @@ Releasing Soon - July 2024
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png" height="50">
 
 # Supported HR Devices
+
+> [!Tip]  
+> LynxVR works best with Pixel Watches due to their constant heartrate tracking!
+
 | Device Name           | Operating System | Standalone Mode | LynxVR PC App | Known Issues |
 |-----------------------|------------------|-----------------|---------------| ------------- |
 | Pixel Watch 2          | WearOS 4         | ✅               | ✅             | |
