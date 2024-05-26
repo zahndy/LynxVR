@@ -1,5 +1,5 @@
 
-# LynxVR - v2
+# LynxVR
 
 > [!WARNING]  
 > The current release does not include backend code to access heartrate service!
