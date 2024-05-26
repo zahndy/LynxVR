@@ -29,8 +29,20 @@ Releasing Soon - July 2024
 
 [See more devices](https://github.com/lynixfur/LynxVR/wiki/Device-Compatibility-List)
 
-# API Specificationm 
-Work In Progress
+# API Specificationm
+
+### VRChat 
+VRChat utilizes OSC to receive data directly from the watch.
+
+``/avatar/parameters/lynxvr_hr`` is used for receiving BPM as a integer value. <br>
+``/avatar/parameters/lynxvr_batt`` is used for receiving battery health of the device.
+
+### Resonite
+
+Resonite uses Websockets to connect to the watch via a companion app (LynxVR Desktop) or cloud variables with api.lynix.ca 
+
+``heartrate,battery_percentage`` is the values expected as integers. <br>
+``76,100`` is an example of how csv data is passed to resonite.
 
 # Credit 
 Gawdl3y - Some inspiration for this app is based on [Heartsock](https://github.com/Gawdl3y/heartsock-app) 
