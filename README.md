@@ -1,3 +1,4 @@
+<img src="https://raw.githubusercontent.com/lynixfur/LynxVR/v2.0-lynxvr/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" width="100px">
 
 # LynxVR
 
