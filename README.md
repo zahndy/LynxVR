@@ -1,5 +1,5 @@
 
-# LynxVR - BETA
+# LynxVR - v2
 LynxVR is a handy app that bridges the gap between your Wear OS smartwatch and your VR adventures. It lets you send your real-time heart rate (HR) data directly into VR games like Resonite and VR Chat, adding a new layer of immersion and personalization.
 
 - Real-time Heart Rate Tracking: See your heart rate reflected in-game, adding a layer of realism that reflects your exertion during gameplay.
