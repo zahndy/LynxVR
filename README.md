@@ -40,10 +40,16 @@ VRChat utilizes OSC to receive data directly from the watch.
 
 ### Resonite
 
-Resonite uses Websockets to connect to the watch via a companion app (LynxVR Desktop) or cloud variables with api.lynix.ca 
+Resonite uses Websockets and OSC to connect to the watch via a companion app (LynxVR Desktop), standalone or cloud variables with api.lynix.ca 
 
 ``heartrate,battery_percentage`` is the values expected as integers. <br>
 ``76,100`` is an example of how csv data is passed to resonite.
+
+#### OSC
+
+``/avatar/parameters/lynxvr_hr`` is used for receiving BPM as a integer value. <br>
+``/avatar/parameters/lynxvr_batt`` is used for receiving battery health of the device.
+
 
 # Credit 
 Gawdl3y - Some inspiration for this app is based on [Heartsock](https://github.com/Gawdl3y/heartsock-app) 
