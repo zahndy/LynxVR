@@ -32,23 +32,16 @@ import ca.lynix.lynxvr.presentation.components.InputBox
 fun ToggleButtonChip(
     modifier: Modifier = Modifier,
     iconModifier: Modifier = Modifier,
+    isServiceRunning: Boolean,
+    onClick: () -> Unit,
 ) {
-    var isServiceRunning by remember { mutableStateOf(false) }
-
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
     ) {
         Chip(
             modifier = modifier.padding(15.dp),
-            onClick = {
-                if (isServiceRunning) {
-                    //
-                } else {
-                    //
-                }
-                isServiceRunning = !isServiceRunning
-            },
+            onClick = onClick,
             label = {
                 Text(
                     text = if (isServiceRunning) "Stop" else "Start",
@@ -67,19 +60,23 @@ fun ToggleButtonChip(
     }
 }
 @Composable
-fun ToggleOSCChip(modifier: Modifier = Modifier) {
-    var checked by remember { mutableStateOf(true) }
+fun ToggleOSCChip(
+    modifier: Modifier = Modifier,
+    isOSC: Boolean,
+    onCheckedChange : () -> Unit,
+) {
+    var checked by remember { mutableStateOf(false) }
 
     ToggleChip(
         modifier = modifier,
-        checked = checked,
+        checked = isOSC,
         toggleControl = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Switch(
-                    checked = checked,
+                    checked = isOSC,
                     modifier = Modifier.semantics {
                         this.contentDescription = if (checked) "On" else "Off"
                     }
@@ -87,7 +84,8 @@ fun ToggleOSCChip(modifier: Modifier = Modifier) {
             }
         },
         onCheckedChange = {
-            checked = it
+            checked = isOSC
+            onCheckedChange()
         },
         label = {
             Column {
