@@ -42,6 +42,14 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/*.kotlin_module"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/license.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
+            excludes += "META-INF/notice.txt"
         }
     }
 }
@@ -68,8 +76,12 @@ dependencies {
     implementation(libs.androidx.wear.input)
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.health.services)
+    implementation(libs.volley)
+    implementation(files("Libs\\java-android-websocket-client-master.jar"))
+   // implementation(libs.localbroadcastmanager)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+
 }

@@ -42,25 +42,70 @@ import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.ItemType
 import com.google.android.horologist.compose.layout.ScreenScaffold
 import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
-
+import android.content.SharedPreferences
+import androidx.core.content.edit
+import androidx.paging.Config
 
 class MainActivity : ComponentActivity() {
+
+    object Config {
+        const val CONF_HTTP_HOSTNAME = "HTTP_HOSTNAME"
+        const val CONF_HTTP_PORT = "HTTP_PORT"
+        const val CONF_NEOS_WS_PORT = "NEOS_PORT"
+
+        const val CONF_HTTP_HOSTNAME_DEFAULT = "127.0.0.1"
+        const val CONF_HTTP_PORT_DEFAULT = 9000
+        const val CONF_NEOS_WS_PORT_DEFAULT = 9555
+
+        const val CONF_BROADCAST_HEARTRATE_UPDATE = "lynxhr.updateHeartRate"
+        const val CONF_BROADCAST_STATUS = "lynxhr.updateStatus"
+
+        const val CONF_SENDING_STATUS_OK = "ok"
+        const val CONF_SENDING_STATUS_ERROR = "error"
+        const val CONF_SENDING_STATUS_NOT_RUNNING = "not_running"
+        const val CONF_SENDING_STATUS_STARTING = "starting"
+    }
+
+    private lateinit var preferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-
+        initConfig()
         super.onCreate(savedInstanceState)
 
         setTheme(android.R.style.Theme_DeviceDefault)
 
         setContent {
-            WearApp("Android")
+            WearApp("Android",preferences)
         }
     }
+
+    private fun initConfig() {
+        preferences = this.getSharedPreferences(packageName + "_preferences", MODE_PRIVATE)
+
+        with(preferences.edit()) {
+            if (!preferences.contains(Config.CONF_HTTP_HOSTNAME)) {
+                putString(Config.CONF_HTTP_HOSTNAME, Config.CONF_HTTP_HOSTNAME_DEFAULT)
+            }
+
+            if (!preferences.contains(Config.CONF_HTTP_PORT)) {
+                putInt(Config.CONF_HTTP_PORT, Config.CONF_HTTP_PORT_DEFAULT)
+            }
+
+            if (!preferences.contains(Config.CONF_NEOS_WS_PORT)) {
+                putInt(Config.CONF_NEOS_WS_PORT, Config.CONF_NEOS_WS_PORT_DEFAULT)
+            }
+            apply()
+        }
+    }
+
 }
+
+
 
 @OptIn(ExperimentalHorologistApi::class)
 @Composable
-fun WearApp(greetingName: String) {
+fun WearApp(greetingName: String, preferences: SharedPreferences ) {
 
     var isServiceRunning by remember { mutableStateOf(false) }
     var isOSC by remember { mutableStateOf(false) }
@@ -112,7 +157,11 @@ fun WearApp(greetingName: String) {
                             label = "Server Address",
                             placeholder = "",
                             value = "api.lynix.ca",
-                            onChange = { value ->
+                            onChange = { value -> with(preferences.edit()) {
+                                putString(MainActivity.Config.CONF_HTTP_HOSTNAME, value) // figure out later
+                                apply()
+                            }
+
 
                             }
                         )
@@ -123,7 +172,13 @@ fun WearApp(greetingName: String) {
                                     placeholder = "",
                                     value = "",
                                     onChange = { value ->
-
+                                        with(preferences.edit()) {
+                                            putInt(
+                                                MainActivity.Config.CONF_HTTP_PORT,
+                                                value.toInt()
+                                            )
+                                            apply()
+                                        }
                                     }
                                 )
                             }
@@ -133,8 +188,12 @@ fun WearApp(greetingName: String) {
                                 label = "Target Address",
                                 placeholder = "0.0.0.0",
                                 value = "",
-                                onChange = { value ->
-                                })
+                                onChange = { value -> with(preferences.edit()) {
+                                    putString(MainActivity.Config.CONF_HTTP_HOSTNAME, value)
+                                    apply()
+                                }
+                                }
+                            )
                         }
                     }
                     item{
@@ -154,5 +213,6 @@ fun WearApp(greetingName: String) {
 @Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
-    WearApp("Preview Android")
+    lateinit var preferences: SharedPreferences
+    WearApp("Preview Android", preferences)
 }
