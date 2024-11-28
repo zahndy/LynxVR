@@ -6,6 +6,7 @@
 
 package ca.lynix.lynxvr.presentation
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,9 +32,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.MutableLiveData
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import ca.lynix.lynxvr.presentation.components.InputBox
+import ca.lynix.lynxvr.presentation.services.LynxVrService
 import ca.lynix.lynxvr.presentation.theme.LynxVRTheme
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.layout.AppScaffold
@@ -42,16 +45,19 @@ import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults
 import com.google.android.horologist.compose.layout.ScalingLazyColumnDefaults.ItemType
 import com.google.android.horologist.compose.layout.ScreenScaffold
 import com.google.android.horologist.compose.layout.rememberResponsiveColumnState
-import android.content.SharedPreferences
-import androidx.core.content.edit
-import androidx.paging.Config
+
+
+enum class RunningState {
+    RUNNING,
+    STOPPED
+}
 
 class MainActivity : ComponentActivity() {
 
     object Config {
         const val CONF_HTTP_HOSTNAME = "HTTP_HOSTNAME"
         const val CONF_HTTP_PORT = "HTTP_PORT"
-        const val CONF_NEOS_WS_PORT = "NEOS_PORT"
+        const val CONF_NEOS_WS_PORT = "RESO_PORT"
 
         const val CONF_HTTP_HOSTNAME_DEFAULT = "127.0.0.1"
         const val CONF_HTTP_PORT_DEFAULT = 9000
@@ -68,6 +74,13 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var preferences: SharedPreferences
 
+    var heartBeat:String = "0"
+    //val Model:DataViewModel by viewModels()
+    val tokenLiveData: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+    var livedata: MutableLiveData<String> = tokenLiveData
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         initConfig()
@@ -75,9 +88,12 @@ class MainActivity : ComponentActivity() {
 
         setTheme(android.R.style.Theme_DeviceDefault)
 
+
         setContent {
-            WearApp("Android",preferences)
+            WearApp(this,"Android",preferences)
         }
+       // startService(Intent(this, LynxVrService(livedata)::class.java))
+        tokenLiveData.observe(this) { value -> heartBeat = value }
     }
 
     private fun initConfig() {
@@ -99,13 +115,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun startMeasure() {
+        //Log.d("service", "Starting foreground heart rate service ...")
+        LynxVrService.startService(this)
+    }
+
+    private fun stopMeasure() {
+        //Log.d("service", "Stopping foreground heart rate service ...")
+        LynxVrService.stopService(this)
+    }
+
+    fun btnToggle(isRunning:Boolean) {
+
+        if (isRunning) {
+            startMeasure()
+        } else {
+            stopMeasure()
+        }
+    }
+
 }
+
 
 
 
 @OptIn(ExperimentalHorologistApi::class)
 @Composable
-fun WearApp(greetingName: String, preferences: SharedPreferences ) {
+fun WearApp(main: MainActivity? = MainActivity(), greetingName: String, preferences: SharedPreferences ) {
 
     var isServiceRunning by remember { mutableStateOf(false) }
     var isOSC by remember { mutableStateOf(false) }
@@ -143,44 +179,45 @@ fun WearApp(greetingName: String, preferences: SharedPreferences ) {
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "0", // Replace 100 with the actual heart rate value
+                                    text = main?.heartBeat!!, // Replace 100 with the actual heart rate value
                                     color = Color.White, // Use white color for the text
                                 )
                             }
                         }
                     }
-                    item { ToggleButtonChip(contentModifier, isServiceRunning = isServiceRunning, onClick = { isServiceRunning = !isServiceRunning }) }
+                    item { ToggleButtonChip(contentModifier, isServiceRunning = isServiceRunning, onClick = {
+                        main?.btnToggle(isServiceRunning)
+                        isServiceRunning = !isServiceRunning })
+                    }
                     item { ToggleOSCChip(contentModifier, isOSC = isOSC, onCheckedChange = { isOSC = !isOSC }) }
                     if (!isOSC) {
-                    item {
-                        InputBox(
-                            label = "Server Address",
-                            placeholder = "",
-                            value = "api.lynix.ca",
-                            onChange = { value -> with(preferences.edit()) {
-                                putString(MainActivity.Config.CONF_HTTP_HOSTNAME, value) // figure out later
-                                apply()
-                            }
-
-
-                            }
-                        )
-                    }
                         item {
-                                InputBox(
-                                    label = "Server Port",
-                                    placeholder = "",
-                                    value = "",
-                                    onChange = { value ->
-                                        with(preferences.edit()) {
-                                            putInt(
-                                                MainActivity.Config.CONF_HTTP_PORT,
-                                                value.toInt()
-                                            )
-                                            apply()
-                                        }
+                            InputBox(
+                                label = "Server Address",
+                                placeholder = "",
+                                value = "api.lynix.ca",
+                                onChange = { value -> with(preferences.edit()) {
+                                    putString(MainActivity.Config.CONF_HTTP_HOSTNAME, value) // figure out later
+                                    apply()
+                                }
+                                }
+                            )
+                        }
+                        item {
+                            InputBox(
+                                label = "Server Port",
+                                placeholder = "",
+                                value = "",
+                                onChange = { value ->
+                                    with(preferences.edit()) {
+                                        putInt(
+                                            MainActivity.Config.CONF_HTTP_PORT,
+                                            value.toInt()
+                                        )
+                                        apply()
                                     }
-                                )
+                                }
+                            )
                             }
                         } else {
                         item {
@@ -208,11 +245,13 @@ fun WearApp(greetingName: String, preferences: SharedPreferences ) {
                 }
             }
         }
+
 }
+
 
 @Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
     lateinit var preferences: SharedPreferences
-    WearApp("Preview Android", preferences)
+    WearApp(null,"Preview Android", preferences)
 }

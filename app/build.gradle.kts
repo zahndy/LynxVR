@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.androidx.health.services)
     implementation(libs.volley)
     implementation(files("Libs\\java-android-websocket-client-master.jar"))
+    implementation("androidx.fragment:fragment-ktx:1.5.6")
    // implementation(libs.localbroadcastmanager)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)

@@ -1,8 +1,9 @@
 package ca.lynix.lynxvr.presentation.services
+//import android.support.v4.content.LocalBroadcastManager
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -11,34 +12,51 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.BatteryManager
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import ca.lynix.lynxvr.R
+import ca.lynix.lynxvr.presentation.MainActivity
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
 import dev.gustavoavila.websocketclient.WebSocketClient
-import android.support.v4.content.LocalBroadcastManager
-import androidx.core.content.ContextCompat
-import java.net.InetAddress
 import java.net.URI
 import java.net.URISyntaxException
-import android.os.BatteryManager
-import android.os.IBinder
-import android.util.Log
-import ca.lynix.lynxvr.presentation.MainActivity
+import java.util.UUID
 import kotlin.math.roundToInt
 
 
-class LynxVrService: LifecycleService(), SensorEventListener {
+class LynxVrService(liveData: MutableLiveData<String>): LifecycleService(), SensorEventListener {
     // The backend needs to be written a little bit due to the new UI functionality and design.
-    //private Context cntx
+
     private lateinit var mHeartRateSensor: Sensor
     private lateinit var mSensorManager: SensorManager
     private lateinit var httpQueue: RequestQueue
     private lateinit var preferences: SharedPreferences
 
+    private val CHANNEL_ID = "HeartRateService"
     //Resonite Websocket Server
     private var webSocketClient: WebSocketClient? = null
+    val tokenLiveData = liveData
 
+    companion object {
+        fun startService(context: Context) {
+            val startIntent = Intent(context, LynxVrService::class.java)
+            ContextCompat.startForegroundService(context, startIntent)
+        }
 
+        fun stopService(context: Context) {
+            val stopIntent = Intent(context, LynxVrService::class.java)
+            context.stopService(stopIntent)
+        }
+    }
 
     private fun createWebSocketClient() {
         val uri: URI
@@ -88,6 +106,101 @@ class LynxVrService: LifecycleService(), SensorEventListener {
         (webSocketClient as WebSocketClient).setReadTimeout(60000)
         (webSocketClient as WebSocketClient).enableAutomaticReconnection(5000)
         (webSocketClient as WebSocketClient).connect()
+    }
+
+    var mainIntent:Intent? = null;
+
+    @SuppressLint("MissingSuperCall")
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+        mainIntent=intent;
+        doSomething()
+
+        createNotificationChannel()
+
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(R.string.notification_title.toString())
+            .setContentText(R.string.notification_text.toString())
+            .setContentIntent(pendingIntent)
+            .build()
+
+        startForeground(1, notification)
+
+        // Start Neos Server
+
+        // Create Neos Websocket Client
+        createWebSocketClient();
+
+        return START_NOT_STICKY
+
+    }
+
+
+    @SuppressLint("MissingSuperCall")
+    override fun onBind(intent: Intent): IBinder? {
+        return null
+    }
+
+    private fun startNeosServer() {
+        // Neos Websocket Server
+        //wsServer.start()
+
+        //Log.d("NEOSVR WS", "The NeosVR Websocket Server has been started.")
+
+    }
+
+    private fun stopNeosServer() {
+        // Neos Websocket Server
+        //wsServer.stop()
+        //Log.d("NEOSVR WS", "The NeosVR Websocket Server has been stopped.")
+    }
+
+    private fun createNotificationChannel() {
+        val serviceChannel = NotificationChannel(
+            CHANNEL_ID,
+            R.string.notification_channel_title.toString(),
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+
+        val manager = getSystemService(NotificationManager::class.java)
+        manager!!.createNotificationChannel(serviceChannel)
+    }
+
+    private fun doSomething() {
+
+        preferences = this.getSharedPreferences(packageName + "_preferences", MODE_PRIVATE)
+        httpQueue = Volley.newRequestQueue(this)
+
+        mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)!!
+
+        val sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+        val arrayList = ArrayList<String>()
+        for (sensor in sensors) {
+            arrayList.add(sensor.name)
+        }
+        arrayList.forEach { n -> System.out.println("LynxSensor: " + n) }
+
+        val thread1: Thread = object : Thread() {
+            override fun run() {
+                //You can remove this loop and replace it with your logic
+                val token1 = UUID.randomUUID().toString()
+                startMeasure()
+                //Handler(Looper.getMainLooper()).post { sendTokenToObserver("Thread1: $token1") }
+
+            }
+        }
+        thread1.start()
+
+
     }
 
     private fun startMeasure() {
@@ -179,20 +292,24 @@ class LynxVrService: LifecycleService(), SensorEventListener {
         // ignored
     }
 
+    fun sendTokenToObserver(token: String?) {
+        tokenLiveData.value = token!!
+    }
 
     private fun sendHeartRateToActivity(heartrate: Int) {
             val intent = Intent(MainActivity.Config.CONF_BROADCAST_HEARTRATE_UPDATE)
             intent.putExtra("heartrate", heartrate)
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-        }
+            //LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+            Handler(Looper.getMainLooper()).post { sendTokenToObserver("Thread1: $intent")}
+        //.
+    }
 
-        private fun sendStatusToActivity(status: String) {
-            val intent = Intent(MainActivity.Config.CONF_BROADCAST_STATUS)
-            intent.putExtra("status", status)
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-        }
-
-
+    private fun sendStatusToActivity(status: String) {
+        val intent = Intent(MainActivity.Config.CONF_BROADCAST_STATUS)
+        intent.putExtra("status", status)
+        //LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+      //Handler(Looper.getMainLooper()).post { sendTokenToObserver("Thread2: $intent")}
+    }
 
 
 }
