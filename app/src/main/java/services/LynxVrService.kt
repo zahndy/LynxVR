@@ -47,18 +47,23 @@ class LynxVrService(liveData: MutableLiveData<String>): LifecycleService(), Sens
     val tokenLiveData = liveData
 
     companion object {
-        fun startService(context: Context) {
+        fun startService(context: Context,) {
+            Log.d("service", "Starting service ...")
             val startIntent = Intent(context, LynxVrService::class.java)
-            ContextCompat.startForegroundService(context, startIntent)
+           // ContextCompat.startForegroundService(context, startIntent)
         }
 
         fun stopService(context: Context) {
+            Log.d("service", "Stopping service ...")
             val stopIntent = Intent(context, LynxVrService::class.java)
-            context.stopService(stopIntent)
+           // context.stopService(stopIntent)
         }
     }
+    //fun LynxVrService(){}
+    //constructor() : this(null){}
 
     private fun createWebSocketClient() {
+        Log.d("service", "Create WebSocket Client ...")
         val uri: URI
         try {
             uri = URI("ws://" + preferences.getString(
@@ -220,7 +225,7 @@ class LynxVrService(liveData: MutableLiveData<String>): LifecycleService(), Sens
     }
 
     private fun sendHeartRate(heartrate: Int) {
-
+        Log.d("sendHeartRate", "heartrate$Int")
         val gfgThread = Thread {
             try {
                 try {

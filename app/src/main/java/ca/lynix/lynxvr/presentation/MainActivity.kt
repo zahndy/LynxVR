@@ -6,8 +6,11 @@
 
 package ca.lynix.lynxvr.presentation
 
+import android.Manifest
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Row
@@ -31,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.MutableLiveData
 import androidx.wear.compose.material.Icon
@@ -88,6 +92,13 @@ class MainActivity : ComponentActivity() {
 
         setTheme(android.R.style.Theme_DeviceDefault)
 
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BODY_SENSORS
+            ) == PackageManager.PERMISSION_DENIED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BODY_SENSORS), 100)
+        }
 
         setContent {
             WearApp(this,"Android",preferences)
@@ -116,12 +127,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startMeasure() {
-        //Log.d("service", "Starting foreground heart rate service ...")
+        Log.d("service", "Starting foreground heart rate service ...")
         LynxVrService.startService(this)
     }
 
     private fun stopMeasure() {
-        //Log.d("service", "Stopping foreground heart rate service ...")
+        Log.d("service", "Stopping foreground heart rate service ...")
         LynxVrService.stopService(this)
     }
 
@@ -186,8 +197,12 @@ fun WearApp(main: MainActivity? = MainActivity(), greetingName: String, preferen
                         }
                     }
                     item { ToggleButtonChip(contentModifier, isServiceRunning = isServiceRunning, onClick = {
+                        Log.d("UI", "isServiceRunning: $isServiceRunning")
+                        Log.d("UI", "Button Toggle ...")
+                        isServiceRunning = !isServiceRunning
                         main?.btnToggle(isServiceRunning)
-                        isServiceRunning = !isServiceRunning })
+                        Log.d("UI", "isServiceRunning: $isServiceRunning")
+                        })
                     }
                     item { ToggleOSCChip(contentModifier, isOSC = isOSC, onCheckedChange = { isOSC = !isOSC }) }
                     if (!isOSC) {
@@ -253,5 +268,5 @@ fun WearApp(main: MainActivity? = MainActivity(), greetingName: String, preferen
 @Composable
 fun DefaultPreview() {
     lateinit var preferences: SharedPreferences
-    WearApp(null,"Preview Android", preferences)
+    WearApp(MainActivity(),"Preview Android", preferences)
 }
